@@ -50,19 +50,7 @@ namespace js
     {
       if (Rp == implicit) { [_ptr release]; }
     }
-    
-    ref<T,Rp>& operator |=(T* value)
-    {
-      if (_ptr == nil)
-      {
-        _ptr = value;
-        object_setClass(value, get_dynamic_subclass());
-        _refs().insert(value);
-      }
-      
-      return *this;
-    }
-    
+        
     // We have three ways to access the referenced object. The first (and
     // preferred method) is the implicit conversion operator, which lets us do
     // the following:
