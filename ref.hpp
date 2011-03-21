@@ -142,12 +142,19 @@ namespace js
     }
     
     
+    // A static `std::set<T*> _refs` is lazily initialized and accessed through
+    // `_refs()`; this keeps track of all live references. When a `ref` is
+    // created, its target is added to `_refs`; when that target is deallocated,
+    // then it is removed from `_refs`.
     static std::set<T*>& _refs()
     {
       static std::set<T*> _refs;
       return _refs;
     }
     
+    // Our target object is referenced in `_ptr`; this member is never referred
+    // except in `target()`, where it is first determined to be living, and then
+    // returned.
     T* _ptr;
   };
   
