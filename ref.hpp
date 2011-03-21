@@ -74,7 +74,7 @@ namespace js
     //     }];
     //
     // Thus, we escape retain cycles in a healthy way.
-    * target() const
+    T* target() const
     {
       return _refs().count(_ptr) > 0 ? _ptr : nil;
     }
