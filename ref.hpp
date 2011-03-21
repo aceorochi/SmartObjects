@@ -29,7 +29,7 @@ namespace js
   //     static void clear_refs(T*);
   //
   template <class T, class CallbackTrait>
-  struct dynamic_subclass;
+  struct subclass_impl;
   
   template <class T, release_policy Rp = implicit>
   struct ref
@@ -123,9 +123,9 @@ namespace js
       {
         subclass = objc_allocateClassPair(original, [name UTF8String], 0);
         
-        typedef dynamic_subclass<T,ref<T,Rp> > DynamicImp;
-        setup_subclass_method(subclass,@selector(dealloc),DynamicImp::dealloc_imp);
-        setup_subclass_method(subclass,@selector(class),DynamicImp::class_imp);
+        typedef subclass_impl<T,ref<T,Rp> > DynamicImp;
+        override_method(subclass,@selector(dealloc),DynamicImp::dealloc_imp);
+        override_method(subclass,@selector(class),DynamicImp::class_imp);
         
         objc_registerClassPair(subclass);
       }
@@ -134,7 +134,7 @@ namespace js
     }
     
     template <class Sig>
-    static void setup_subclass_method(Class subclass, SEL sel, Sig imp)
+    static void override_method(Class subclass, SEL sel, Sig imp)
     {
       Class superclass = class_getSuperclass(subclass);
       Method m = class_getInstanceMethod(superclass, sel);
@@ -160,7 +160,7 @@ namespace js
   
   
   template <class T, class CallbackTrait>
-  struct dynamic_subclass 
+  struct subclass_impl 
   {
     static void dealloc_imp(T* self, SEL s)
     {
