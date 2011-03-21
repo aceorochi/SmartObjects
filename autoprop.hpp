@@ -8,9 +8,6 @@ namespace js
   };
   
   template <class T, retain_policy Rp>
-  struct autoprop;
-  
-  template <class T, retain_policy Rp>
   struct assignment_traits
   { 
     static void set(T*& dest, T* value);
