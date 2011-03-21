@@ -10,7 +10,15 @@ namespace js
     release
   };
 
-  template <class T>
+  // `dynamic_subclass` contains the implementations that will be used whenever
+  // a subclass is generated for a referenced object. This struct template takes
+  // type parameters: a class `T` which is the type of the referenced object,
+  // and a class `CallbackTrait` which implements:
+  //
+  //     static void clear_refs(T*);
+  //
+  //
+  template <class T, class CallbackTrait>
   struct dynamic_subclass;
   
   template <class T, ownership_policy Op = not_owning>
@@ -54,8 +62,9 @@ namespace js
       {
         subclass = objc_allocateClassPair(original, [name UTF8String], 0);
         
-        setup_subclass_method(subclass,@selector(dealloc),dynamic_subclass<T>::dealloc_imp);
-        setup_subclass_method(subclass,@selector(class),dynamic_subclass<T>::class_imp);
+        typedef dynamic_subclass<T,ref<T,Op> > DynamicImp;
+        setup_subclass_method(subclass,@selector(dealloc),DynamicImp::dealloc_imp);
+        setup_subclass_method(subclass,@selector(class),DynamicImp::class_imp);
         
         objc_registerClassPair(subclass);
       }
@@ -82,30 +91,30 @@ namespace js
   };
   
   
-  template <class T>
+  template <class T, class CallbackTrait>
   struct dynamic_subclass 
   {
     static void dealloc_imp(T* self, SEL s)
     {
-      ref<T>::clear_refs(self);
-      real_imp(self,s);
+      CallbackTrait::clear_refs(self);
+      original_implementation(self,s);
     }
     
     static Class class_imp(T* self, SEL s)
     {
-      return real_superclass(self);
+      return original_superclass(self);
     }
     
     
   private:
-    static Class real_superclass(T* self)
+    static Class original_superclass(T* self)
     {
-      return class_getSuperclass(object_getClass(self));
+      return class_getSuperclass([self class]);
     }
     
-    static IMP real_imp(T* self, SEL sel)
+    static IMP original_implementation(T* self, SEL sel)
     {
-      return class_getMethodImplementation(real_superclass(self), sel);
+      return class_getMethodImplementation(original_superclass(self), sel);
     }
   };  
 }
