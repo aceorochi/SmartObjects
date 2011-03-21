@@ -145,7 +145,7 @@ namespace js
   private:
     static Class original_superclass(T* self)
     {
-      return class_getSuperclass([self class]);
+      return class_getSuperclass(object_getClass(self));
     }
     
     static IMP original_implementation(T* self, SEL sel)
