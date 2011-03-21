@@ -30,17 +30,12 @@ namespace js
     
     T *target() const
     {
-      return exists() ? _ptr : nil;
+      return _refs().count(_ptr) > 0 ? _ptr : nil;
     }
      
     operator T*() const
     {
       return target();
-    }
-    
-    bool exists() const
-    {
-      return _refs().count(_ptr) > 0;
     }
     
     static void clear_refs(T *object)
