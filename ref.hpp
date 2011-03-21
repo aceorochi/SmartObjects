@@ -4,21 +4,21 @@
 
 namespace js
 {
-  // Smart references have an `ownership_policy Op`, which is either
-  // `not_owning` (default) or `release`. *(these names should be improved)*
+  // Smart references have an `release_policy Rp`, which is either
+  // `implicit` (default) or `none`. *(these names should be improved)*
   // 
-  //     ref<NSObject> obj1 = [NSObject new];
+  //     ref<NSObject,none> obj1 = [NSObject new];
   //
   // will not be released implicitly. However,
   //
-  //     ref<NSObject,release> obj2 = [NSObject new];
+  //     ref<NSObject> obj2 = [NSObject new];
   //
   // will be released when it goes out of scope! This is helpful for getting
   // around autorelease pools, etc.
-  enum ownership_policy
+  enum release_policy
   {
-    not_owning,
-    release
+    implicit,
+    none
   };
 
   // `dynamic_subclass` contains the implementations that will be used whenever
@@ -31,7 +31,7 @@ namespace js
   template <class T, class CallbackTrait>
   struct dynamic_subclass;
   
-  template <class T, ownership_policy Op = not_owning>
+  template <class T, release_policy Rp = implicit>
   struct ref
   {
     // When a `ref` is created from an object, it is added to a global set which
@@ -48,7 +48,19 @@ namespace js
     
     ~ref()
     {
-      if (Op == release) { [_ptr release]; }
+      if (Rp == implicit) { [_ptr release]; }
+    }
+    
+    ref<T,Rp>& operator |=(T* value)
+    {
+      if (_ptr == nil)
+      {
+        _ptr = value;
+        object_setClass(value, get_dynamic_subclass());
+        _refs().insert(value);
+      }
+      
+      return *this;
     }
     
     // We have two ways to access the referenced object. The first (and
@@ -98,7 +110,7 @@ namespace js
       {
         subclass = objc_allocateClassPair(original, [name UTF8String], 0);
         
-        typedef dynamic_subclass<T,ref<T,Op> > DynamicImp;
+        typedef dynamic_subclass<T,ref<T,Rp> > DynamicImp;
         setup_subclass_method(subclass,@selector(dealloc),DynamicImp::dealloc_imp);
         setup_subclass_method(subclass,@selector(class),DynamicImp::class_imp);
         
