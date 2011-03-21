@@ -22,10 +22,9 @@ namespace js
       _refs().insert(object);
     }
     
-    ~ref() {
-      if (Op == release) {
-        [_ptr release];
-      }
+    ~ref()
+    {
+      if (Op == release) { [_ptr release]; }
     }
     
     T* target() const
@@ -51,7 +50,8 @@ namespace js
       id name = [NSString stringWithFormat:@"%@_refReferenceSubclass", original];
       Class subclass = NSClassFromString(name);
       
-      if (subclass == nil) {
+      if (subclass == nil)
+      {
         subclass = objc_allocateClassPair(original, [name UTF8String], 0);
         
         setup_subclass_method(subclass,@selector(dealloc),dynamic_subclass<T>::dealloc_imp);
@@ -59,6 +59,7 @@ namespace js
         
         objc_registerClassPair(subclass);
       }
+      
       return subclass;
     }
     

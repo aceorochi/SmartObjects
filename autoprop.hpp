@@ -23,18 +23,13 @@ namespace js
   {
     autoprop() { }
     autoprop(T* val) : _ptr(val) { }
-    
-    ~autoprop()
-    {
-      assignment_traits<T,Rp>::cleanup(_ptr);
-      _ptr = nil;
-    }
+    ~autoprop() { assignment_traits<T,Rp>::cleanup(_ptr); }
     
     autoprop<T>& operator =(T* val)
     {
       assignment_traits<T,Rp>::set(_ptr,val);
       return* this;
-    }    
+    }
     
     operator T() const { return _ptr; }
     id operator()() const { return _ptr; }
@@ -47,7 +42,6 @@ namespace js
   };
   
   
-  
   template <class T>
   struct assignment_traits<T, retain>
   {
@@ -57,10 +51,7 @@ namespace js
       dest = [value retain];
     }
     
-    static void cleanup(T* val)
-    {
-      [val release];
-    }
+    static void cleanup(T* val) { [val release]; }
   };
   
   template <class T>
@@ -72,22 +63,13 @@ namespace js
       dest = [value copy];
     }
     
-    static void cleanup(T* val)
-    {
-      [val release];
-    }
+    static void cleanup(T* val) { [val release]; }
   };
   
   template <class T>
   struct assignment_traits<T, assign>
   {
-    static void set(T*& dest, T* value)
-    {
-      dest = value;
-    }
-    
-    static void cleanup(T* val)
-    {
-    }
+    static void set(T*& dest, T* value) { dest = value; }
+    static void cleanup(T* val) { }
   };
 }
