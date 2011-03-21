@@ -63,7 +63,7 @@ namespace js
       return *this;
     }
     
-    // We have two ways to access the referenced object. The first (and
+    // We have three ways to access the referenced object. The first (and
     // preferred method) is the implicit conversion operator, which lets us do
     // the following:
     //
@@ -75,6 +75,14 @@ namespace js
       return target();
     }
     
+    // The second way uses the call-operator; this is kind of nasty, but is
+    // useful when we want to use dot-notation for property access on our
+    // referenced object.
+    // 
+    //     ref<NSString> str = @"adfasdf";
+    //     const char* fail = str.UTF8String; // results in compile-error
+    //     const char* c_str = str().UTF8String; // works as expected
+    //
     T* operator ()() const
     {
       return target();
