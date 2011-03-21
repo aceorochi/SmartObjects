@@ -75,6 +75,11 @@ namespace js
       return target();
     }
     
+    T* operator ()() const
+    {
+      return target();
+    }
+    
     // Sometimes, however, it may be desirable to explicitly get the referenced
     // object. In either case, the referenced object will be returned if it
     // still exists; otherwise, it will register `nil`. This is especially
