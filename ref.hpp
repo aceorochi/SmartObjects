@@ -23,7 +23,7 @@ namespace js
     }
     
     ~ref() {
-      if (Op == not_owning) {
+      if (Op == release) {
         [_ptr release];
       }
     }
