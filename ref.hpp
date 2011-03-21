@@ -3,7 +3,18 @@
 #import <memory>
 
 namespace js
-{  
+{
+  // Smart references have an `ownership_policy Op`, which is either
+  // `not_owning` (default) or `release`. *(these names should be improved)*
+  // 
+  //     ref<NSObject> obj1 = [NSObject new];
+  //
+  // will not be released implicitly. However,
+  //
+  //     ref<NSObject,release> obj2 = [NSObject new];
+  //
+  // will be released when it goes out of scope! This is helpful for getting
+  // around autorelease pools, etc.
   enum ownership_policy
   {
     not_owning,
@@ -17,13 +28,18 @@ namespace js
   //
   //     static void clear_refs(T*);
   //
-  //
   template <class T, class CallbackTrait>
   struct dynamic_subclass;
   
   template <class T, ownership_policy Op = not_owning>
   struct ref
   {
+    // When a `ref` is created from an object, it is added to a global set which
+    // keeps track of live references; a subclass of the object's class is
+    // dynamically generated, and the object has its `isa` pointer switched to
+    // the new subclass. This allows us to have some hooks in `-dealloc`, to
+    // update the reference-tracker. That way, when referenced objects are
+    // deallocated, the our reference is zeroed out.
     ref(T* object) : _ptr(object)
     {
       object_setClass(object, get_dynamic_subclass());
@@ -35,16 +51,36 @@ namespace js
       if (Op == release) { [_ptr release]; }
     }
     
-    T* target() const
-    {
-      return _refs().count(_ptr) > 0 ? _ptr : nil;
-    }
-     
+    // We have two ways to access the referenced object. The first (and
+    // preferred method) is the implicit conversion operator, which lets us do
+    // the following:
+    //
+    //     ref<NSString> str = @"asdfasdf";
+    //     const char* c_str = [str UTF8String];
+    //
     operator T*() const
     {
       return target();
     }
     
+    // Sometimes, however, it may be desirable to explicitly get the referenced
+    // object. In either case, the referenced object will be returned if it
+    // still exists; otherwise, it will register `nil`. This is especially
+    // helpful for when we want a weak reference (to avoid retain-cycles):
+    //
+    //     ref<typeof(self)> rself = self;
+    //     [something doSomethingCopyingBlock:^{
+    //       [rself doSomethingElse];
+    //     }];
+    //
+    // Thus, we escape retain cycles in a healthy way.
+    * target() const
+    {
+      return _refs().count(_ptr) > 0 ? _ptr : nil;
+    }
+     
+    // When a referenced object is deallocated, it needs to be removed from our
+    // global references set.
     static void clear_refs(T* object)
     {
       _refs().erase(object);
