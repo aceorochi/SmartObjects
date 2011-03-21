@@ -58,30 +58,34 @@ namespace js
   struct autoprop
   {
     autoprop() { }
-    autoprop(T* val) : _ptr(val) { }
-    ~autoprop() { cleanup_value(_ptr); }
+    autoprop(T* value)
+    {
+      assign_value(value);
+    }
+    
+    ~autoprop() { cleanup_value(); }
     
     autoprop<T>& operator =(T* val)
     {
+      if (Rp != assign) { [_ptr autorelease]; }
       assign_value(_ptr,val,Rp);
       return* this;
     }
     
     operator id() const { return _ptr; }
-    id operator()() const { return _ptr; }
+    T* operator()() const { return _ptr; }
 
   private:
-    void assign_value(id& dest, id value)
+    void assign_value(id value)
     {
-      if (Rp != assign) { [dest autorelease]; }
-      if (Rp == retain) { dest = [value retain]; }
-      else if (Rp == copy) { dest = [value copy]; }
-      else { dest = value; }
+      if (Rp == retain) { _ptr = [value retain]; }
+      else if (Rp == copy) { _ptr = [value copy]; }
+      else { _ptr = value; }
     }
     
-    void cleanup_value(id value)
+    void cleanup_value()
     {
-      if (Rp != assign) { [value release]; }
+      if (Rp != assign) { [_ptr release]; }
     }
     
     T* _ptr;
