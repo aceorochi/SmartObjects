@@ -14,6 +14,15 @@ namespace js
     static void cleanup(T* value);
   };
   
+  template <retain_policy Rp>
+  void assign_value(id& dest, id value);
+  
+  template <retain_policy Rp>
+  void cleanup_value(id value)
+  {
+    [value release];
+  }
+  
   // `autoprop` is a thin wrapper for pointers to Objective-C objects, to be
   // used in the generation of properties. Take the following example:
   //
@@ -65,53 +74,45 @@ namespace js
   {
     autoprop() { }
     autoprop(T* val) : _ptr(val) { }
-    ~autoprop() { assignment_traits<T,Rp>::cleanup(_ptr); }
+    ~autoprop() { cleanup_value<Rp>(_ptr); }
     
     autoprop<T>& operator =(T* val)
     {
-      assignment_traits<T,Rp>::set(_ptr,val);
+      assign_value<Rp>(_ptr,val);
       return* this;
     }
     
     operator T() const { return _ptr; }
     id operator()() const { return _ptr; }
 
-    friend void assignment_traits<T,Rp>::set(T*&, T*);
-    friend void assignment_traits<T,Rp>::cleanup(T*);
-    
   private:
     T* _ptr;
   };
   
   
-  template <class T>
-  struct assignment_traits<T, retain>
+  template <>
+  void assign_value<retain>(id& dest, id value)
   {
-    static void set(T*& dest, T* value)
-    {
-      [dest autorelease];
-      dest = [value retain];
-    }
-    
-    static void cleanup(T* val) { [val release]; }
-  };
+    [dest autorelease];
+    dest = [value retain];
+  }
   
-  template <class T>
-  struct assignment_traits<T, copy>
+  template <>
+  void assign_value<copy>(id& dest, id value)
   {
-    static void set(T*& dest, T* value)
-    {
-      [dest autorelease]; 
-      dest = [value copy];
-    }
-    
-    static void cleanup(T* val) { [val release]; }
-  };
+    [dest autorelease];
+    dest = [value copy];
+  }
   
-  template <class T>
-  struct assignment_traits<T, assign>
+  template <>
+  void assign_value<assign>(id& dest, id value)
   {
-    static void set(T*& dest, T* value) { dest = value; }
-    static void cleanup(T* val) { }
-  };
+    dest = value;
+  }
+  
+  template <>
+  void cleanup_value<assign>(id value)
+  {
+  }
+  
 }
