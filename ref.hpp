@@ -2,14 +2,16 @@
 #import <set>
 #import <memory>
 
-namespace js {
-  template <class T>
-  struct dynamic_subclass;
-  
-  enum ownership_policy {
+namespace js
+{  
+  enum ownership_policy
+  {
     not_owning,
     release
   };
+
+  template <class T>
+  struct dynamic_subclass;
   
   template <class T, ownership_policy Op = not_owning>
   struct ref
@@ -53,7 +55,6 @@ namespace js {
       Class original = [_ptr class];
       
       NSString *name = [NSString stringWithFormat:@"%@_refReferenceSubclass", original];
-      NSLog(@"name: %@", name);
       Class subclass = NSClassFromString(name);
       
       if (subclass == nil) {
@@ -75,7 +76,6 @@ namespace js {
       class_addMethod(subclass, sel, reinterpret_cast<IMP>(imp), method_getTypeEncoding(m));
     }
     
-    T *_ptr;
     
     static std::set<T*> &_refs()
     {
@@ -83,6 +83,7 @@ namespace js {
       return _refs;
     }
     
+    T *_ptr;
   };
   
   

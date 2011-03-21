@@ -1,6 +1,7 @@
-namespace js {
-  
-  enum retain_policy {
+namespace js
+{
+  enum retain_policy
+  {
     retain,
     copy,
     assign
@@ -37,7 +38,7 @@ namespace js {
     operator T() const { return _ptr; }
     id operator()() const { return _ptr; }
 
-    friend void assignment_traits<T,Rp>::set(T*&, T *);
+    friend void assignment_traits<T,Rp>::set(T*&, T*);
     friend void assignment_traits<T,Rp>::cleanup(T*);
     
   private:
