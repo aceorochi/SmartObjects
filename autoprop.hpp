@@ -13,9 +13,10 @@ namespace js
   template <class T, retain_policy Rp>
   struct assignment_traits
   { 
-    static void set(T*&, T *value);
-    static void cleanup(T *val);
+    static void set(T *&dest, T *value);
+    static void cleanup(T *value);
   };
+  
   
   template <class T, retain_policy Rp = retain>
   struct autoprop

@@ -15,7 +15,7 @@ namespace js
   
   template <class T, ownership_policy Op = not_owning>
   struct ref
-  {  
+  {
     ref(T *object) : _ptr(object)
     {
       object_setClass(object, get_dynamic_subclass());
@@ -32,8 +32,7 @@ namespace js
     {
       return exists() ? _ptr : nil;
     }
-    
-    
+     
     operator T*() const
     {
       return target();
@@ -58,7 +57,7 @@ namespace js
       Class subclass = NSClassFromString(name);
       
       if (subclass == nil) {
-        subclass = objc_allocateClassPair(original, [name UTF8String], 0);
+        subclass = objc_allocateClassPair(original, name.UTF8String, 0);
         
         setup_subclass_method(subclass,@selector(dealloc),dynamic_subclass<T>::dealloc_imp);
         setup_subclass_method(subclass,@selector(class),dynamic_subclass<T>::class_imp);
