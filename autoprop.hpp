@@ -13,8 +13,8 @@ namespace js
   template <class T, retain_policy Rp>
   struct assignment_traits
   { 
-    static void set(T *&dest, T *value);
-    static void cleanup(T *value);
+    static void set(T*& dest, T* value);
+    static void cleanup(T* value);
   };
   
   
@@ -22,7 +22,7 @@ namespace js
   struct autoprop
   {
     autoprop() { }
-    autoprop(T *val) : _ptr(val) { }
+    autoprop(T* val) : _ptr(val) { }
     
     ~autoprop()
     {
@@ -33,7 +33,7 @@ namespace js
     autoprop<T>& operator =(T* val)
     {
       assignment_traits<T,Rp>::set(_ptr,val);
-      return *this;
+      return* this;
     }    
     
     operator T() const { return _ptr; }
@@ -51,13 +51,13 @@ namespace js
   template <class T>
   struct assignment_traits<T, retain>
   {
-    static void set(T *&dest, T *value)
+    static void set(T*& dest, T* value)
     {
       [dest autorelease];
       dest = [value retain];
     }
     
-    static void cleanup(T *val)
+    static void cleanup(T* val)
     {
       [val release];
     }
@@ -66,13 +66,13 @@ namespace js
   template <class T>
   struct assignment_traits<T, copy>
   {
-    static void set(T *&dest, T *value)
+    static void set(T*& dest, T* value)
     {
       [dest autorelease]; 
       dest = [value copy];
     }
     
-    static void cleanup(T *val)
+    static void cleanup(T* val)
     {
       [val release];
     }
@@ -81,12 +81,12 @@ namespace js
   template <class T>
   struct assignment_traits<T, assign>
   {
-    static void set(T *&dest, T *value)
+    static void set(T*& dest, T* value)
     {
       dest = value;
     }
     
-    static void cleanup(T *val)
+    static void cleanup(T* val)
     {
     }
   };
