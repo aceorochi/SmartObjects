@@ -7,22 +7,7 @@ namespace js
     assign
   };
   
-  template <class T, retain_policy Rp>
-  struct assignment_traits
-  { 
-    static void set(T*& dest, T* value);
-    static void cleanup(T* value);
-  };
-  
-  template <retain_policy Rp>
-  void assign_value(id& dest, id value);
-  
-  template <retain_policy Rp>
-  void cleanup_value(id value)
-  {
-    [value release];
-  }
-  
+    
   // `autoprop` is a thin wrapper for pointers to Objective-C objects, to be
   // used in the generation of properties. Take the following example:
   //
@@ -74,45 +59,32 @@ namespace js
   {
     autoprop() { }
     autoprop(T* val) : _ptr(val) { }
-    ~autoprop() { cleanup_value<Rp>(_ptr); }
+    ~autoprop() { cleanup_value(_ptr); }
     
     autoprop<T>& operator =(T* val)
     {
-      assign_value<Rp>(_ptr,val);
+      assign_value(_ptr,val,Rp);
       return* this;
     }
     
-    operator T() const { return _ptr; }
+    operator id() const { return _ptr; }
     id operator()() const { return _ptr; }
 
   private:
+    void assign_value(id& dest, id value)
+    {
+      if (Rp != assign) { [dest autorelease]; }
+      if (Rp == retain) { dest = [value retain]; }
+      else if (Rp == copy) { dest = [value copy]; }
+      else { dest = value; }
+    }
+    
+    void cleanup_value(id value)
+    {
+      if (Rp != assign) { [value release]; }
+    }
+    
     T* _ptr;
   };
-  
-  
-  template <>
-  void assign_value<retain>(id& dest, id value)
-  {
-    [dest autorelease];
-    dest = [value retain];
-  }
-  
-  template <>
-  void assign_value<copy>(id& dest, id value)
-  {
-    [dest autorelease];
-    dest = [value copy];
-  }
-  
-  template <>
-  void assign_value<assign>(id& dest, id value)
-  {
-    dest = value;
-  }
-  
-  template <>
-  void cleanup_value<assign>(id value)
-  {
-  }
   
 }
