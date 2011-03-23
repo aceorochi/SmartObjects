@@ -172,5 +172,10 @@ namespace js
     {
       return class_getMethodImplementation(original_class(self), sel);
     }
-  };  
+  };
+  
+  template <class T>
+  struct weak_ref : public ref<T,weak>
+  {
+  };
 }
