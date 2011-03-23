@@ -20,7 +20,7 @@ namespace js
     strong, // implicit release
     weak // no implicit release
   };
-
+  
   // `dynamic_subclass` contains the implementations that will be used whenever
   // a subclass is generated for a referenced object. This struct template takes
   // type parameters: a class `T` which is the type of the referenced object,
@@ -50,7 +50,7 @@ namespace js
     {
       if (Rp == strong) { [_ptr release]; }
     }
-        
+    
     // We have three ways to access the referenced object. The first (and
     // preferred method) is the implicit conversion operator, which lets us do
     // the following:
@@ -91,7 +91,7 @@ namespace js
     {
       return _refs().count(_ptr) > 0 ? _ptr : nil;
     }
-     
+    
     // When a referenced object is deallocated, it needs to be removed from our
     // global references set.
     static void clear_refs(T* object)
@@ -177,5 +177,8 @@ namespace js
   template <class T>
   struct weak_ref : public ref<T,weak>
   {
+    weak_ref(T* object) : ref<T,weak>(object)
+    {
+    }
   };
 }
