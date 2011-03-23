@@ -1,3 +1,5 @@
+#import <map>
+
 namespace js
 {
   enum retain_policy
@@ -7,6 +9,7 @@ namespace js
     assign
   };
   
+  // ** BE VERY CAREFUL. THERE ARE SOME MEMORY PROBLEMS HERE. **
     
   // `autoprop` is a thin wrapper for pointers to Objective-C objects, to be
   // used in the generation of properties. Take the following example:
@@ -63,17 +66,20 @@ namespace js
       assign_value(value);
     }
     
-    ~autoprop() { cleanup_value(); }
+    ~autoprop()
+    {
+      cleanup_value();
+    }
     
     autoprop<T>& operator =(T* val)
     {
       if (Rp != assign) { [_ptr autorelease]; }
-      assign_value(_ptr,val,Rp);
+      assign_value(_ptr,val,Rp);      
       return* this;
     }
     
     operator id() const { return _ptr; }
-    T* operator()() const { return _ptr; }
+    T* operator()() const { return _ptr; }    
 
   private:
     void assign_value(id value)
