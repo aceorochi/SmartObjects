@@ -5,20 +5,20 @@
 namespace js
 {
   // Smart references have an `release_policy Rp`, which is either
-  // `implicit` (default) or `none`. *(these names should be improved)*
+  // `strong` (default) or `weak`. *(these names should be improved)*
   // 
-  //     ref<NSObject,none> obj1 = [NSObject new];
+  //     ref<NSObject,weak> obj1 = [[NSObject new] autorelease];
   //
-  // will not be released implicitly. However,
+  // will not be overreleased. However,
   //
   //     ref<NSObject> obj2 = [NSObject new];
   //
   // will be released when it goes out of scope! This is helpful for getting
   // around autorelease pools, etc.
-  enum release_policy
+  enum reference_policy
   {
-    implicit,
-    none
+    strong, // implicit release
+    weak // no implicit release
   };
 
   // `dynamic_subclass` contains the implementations that will be used whenever
@@ -31,7 +31,7 @@ namespace js
   template <class T, class CallbackTrait>
   struct subclass_impl;
   
-  template <class T, release_policy Rp = implicit>
+  template <class T, reference_policy Rp = strong>
   struct ref
   {
     // When a `ref` is created from an object, it is added to a global set which
@@ -48,7 +48,7 @@ namespace js
     
     ~ref()
     {
-      if (Rp == implicit) { [_ptr release]; }
+      if (Rp == strong) { [_ptr release]; }
     }
         
     // We have three ways to access the referenced object. The first (and
