@@ -1,6 +1,5 @@
 #import <objc/runtime.h>
 #import <set>
-#import <memory>
 
 namespace js
 {
