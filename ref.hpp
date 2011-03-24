@@ -81,12 +81,21 @@ namespace js
     // still exists; otherwise, it will register `nil`. This is especially
     // helpful for when we want a weak reference (to avoid retain-cycles):
     //
-    //     ref<typeof(self)> rself = self;
+    //     ref<SomeType,weak> rself = self;
     //     [something doSomethingCopyingBlock:^{
     //       [rself doSomethingElse];
+    //       rself.property = YES; // the compiler will fail at casting here.
+    //       rself().property = YES;
+    //       // operator() helps the compiler with dot-syntax, and is the same
+    //       // as using ref::target:
+    //       rself.target().property = YES;
     //     }];
     //
-    // Thus, we escape retain cycles in a healthy way.
+    // Either way, we escape block retain-cycles in a healthy way: the `ref` is copied
+    // into the block's internal state; since the block doesn't know anything
+    // about its contents, the underlying object is not retained. Then, when we
+    // use the reference in any way that causes it to be casted to `id` (or
+    // otherwise converted), we receive the original object pointer.
     T* target() const
     {
       return _refs().count(_ptr) > 0 ? _ptr : nil;
