@@ -120,8 +120,8 @@ namespace js
         subclass = objc_allocateClassPair(original, [name UTF8String], 0);
         
         typedef subclass_impl<T,ref<T,Rp> > DynamicImp;
-        override_method(subclass,@selector(dealloc),DynamicImp::dealloc_imp);
-        override_method(subclass,@selector(class),DynamicImp::class_imp);
+        override_method(subclass, @selector(dealloc), DynamicImp::dealloc_imp);
+        override_method(subclass, @selector(class), DynamicImp::class_imp);
         
         objc_registerClassPair(subclass);
       }
