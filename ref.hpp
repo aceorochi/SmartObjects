@@ -30,7 +30,7 @@ namespace js
   template <class T, class CallbackTrait>
   struct subclass_impl;
   
-  template <class T, reference_policy Rp = strong>
+  template <class T = NSObject, reference_policy Rp = strong>
   struct ref
   {
     // When a `ref` is created from an object, it is added to a global set which
